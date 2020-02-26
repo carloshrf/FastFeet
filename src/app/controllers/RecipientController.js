@@ -4,13 +4,13 @@ import Recipient from '../models/Recipient';
 class RecipientController {
   async store(req, res) {
     const schema = Yup.object().shape({
-      nome: Yup.string().required(),
-      rua: Yup.string().required(),
-      numero: Yup.string().required(),
-      complemento: Yup.string().required(),
-      estado: Yup.string().required(),
-      cidade: Yup.string().required(),
-      cep: Yup.string().required(),
+      name: Yup.string().required(),
+      street: Yup.string().required(),
+      number: Yup.string().required(),
+      complement: Yup.string().required(),
+      state: Yup.string().required(),
+      city: Yup.string().required(),
+      zipcode: Yup.string().required(),
     });
 
     if (!(await schema.isValid(req.body))) {
@@ -24,13 +24,13 @@ class RecipientController {
 
   async update(req, res) {
     const schema = Yup.object().shape({
-      nome: Yup.string().required(),
-      rua: Yup.string().required(),
-      numero: Yup.string().required(),
-      complemento: Yup.string().required(),
-      estado: Yup.string().required(),
-      cidade: Yup.string().required(),
-      cep: Yup.string().required(),
+      name: Yup.string().required(),
+      street: Yup.string().required(),
+      number: Yup.string().required(),
+      complement: Yup.string().required(),
+      state: Yup.string().required(),
+      city: Yup.string().required(),
+      zipcode: Yup.string().required(),
     });
 
     if (!(await schema.isValid(req.body))) {
