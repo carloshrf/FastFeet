@@ -22,7 +22,10 @@ module.exports = {
         allowNull: false,
       },
       signature_id: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
+        references: { model: 'files', key: 'id' },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL',
         allowNull: true,
       },
       product: {

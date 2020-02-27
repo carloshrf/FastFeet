@@ -1,4 +1,8 @@
 import * as Yup from 'yup';
+import { isAfter, parseISO } from 'date-fns';
+import Deliveryman from '../models/Deliveryman';
+import Recipient from '../models/Recipient';
+import File from '../models/File';
 import Order from '../models/Order';
 
 class OrderController {
@@ -12,6 +16,23 @@ class OrderController {
         'signature_id',
         'start_date',
         'end_date',
+      ],
+      include: [
+        {
+          model: Recipient,
+          as: 'recipient',
+          attributes: ['name'],
+        },
+        {
+          model: Deliveryman,
+          as: 'deliveryman',
+          attributes: ['name', 'email'],
+        },
+        {
+          model: File,
+          as: 'signature',
+          attributes: ['name', 'path', 'url'],
+        },
       ],
     });
 
@@ -35,7 +56,17 @@ class OrderController {
   }
 
   async update(req, res) {
-    return res.json();
+    const order = await Order.findByPk(req.params.id);
+
+    if (!order) {
+      return res.status(400).json({ error: 'Order does not exists' });
+    }
+
+    order.start_date = parseISO(req.body.start_date);
+    order.end_date = parseISO(req.body.end_date);
+
+    const newOrder = await order.update();
+    return res.json(newOrder);
   }
 
   async delete(req, res) {
