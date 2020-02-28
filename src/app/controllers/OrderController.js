@@ -82,7 +82,7 @@ class OrderController {
     await Mail.sendMail({
       to: `${orderInfo.deliveryman.name} <${orderInfo.deliveryman.email}>`,
       subject: 'Nova Encomenda',
-      template: 'delivery',
+      template: 'newShipping',
       context: {
         deliveryman: orderInfo.deliveryman.name,
         product: orderInfo.product,
