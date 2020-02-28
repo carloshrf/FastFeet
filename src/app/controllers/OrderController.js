@@ -1,5 +1,7 @@
 import * as Yup from 'yup';
-import { isAfter, parseISO } from 'date-fns';
+import { parseISO, format } from 'date-fns';
+import pt from 'date-fns/locale/pt';
+import Mail from '../../lib/Mail';
 import Deliveryman from '../models/Deliveryman';
 import Recipient from '../models/Recipient';
 import File from '../models/File';
@@ -8,6 +10,7 @@ import Order from '../models/Order';
 class OrderController {
   async index(req, res) {
     const order = await Order.findAll({
+      where: { canceled_at: null },
       attributes: [
         'id',
         'recipient_id',
@@ -16,6 +19,7 @@ class OrderController {
         'signature_id',
         'start_date',
         'end_date',
+        'canceled_at',
       ],
       include: [
         {
@@ -52,7 +56,48 @@ class OrderController {
 
     const order = await Order.create(req.body);
 
-    return res.json(order);
+    const orderInfo = await Order.findByPk(order.id, {
+      include: [
+        {
+          model: Recipient,
+          as: 'recipient',
+          attributes: [
+            'name',
+            'street',
+            'number',
+            'complement',
+            'state',
+            'city',
+            'zipcode',
+          ],
+        },
+        {
+          model: Deliveryman,
+          as: 'deliveryman',
+          attributes: ['name', 'email'],
+        },
+      ],
+    });
+
+    await Mail.sendMail({
+      to: `${orderInfo.deliveryman.name} <${orderInfo.deliveryman.email}>`,
+      subject: 'Nova Encomenda',
+      template: 'delivery',
+      context: {
+        deliveryman: orderInfo.deliveryman.name,
+        product: orderInfo.product,
+        number: orderInfo.recipient.number,
+        complement: orderInfo.recipient.complement,
+        street: orderInfo.recipient.street,
+        city: orderInfo.recipient.city,
+        state: orderInfo.recipient.state,
+        zipcode: orderInfo.recipient.zipcode,
+        name: orderInfo.recipient.name,
+        date: format(orderInfo.createdAt, "dd'/'MM'/'y", { locale: pt }),
+      },
+    });
+
+    return res.json(orderInfo);
   }
 
   async update(req, res) {
@@ -76,9 +121,11 @@ class OrderController {
       res.json(400).json({ error: 'Order ID does not exists' });
     }
 
-    order.destroy();
+    order.canceled_at = new Date();
 
-    return res.json();
+    order.save();
+
+    return res.json(order);
   }
 }
 
