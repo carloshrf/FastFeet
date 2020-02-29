@@ -114,7 +114,7 @@ class OrderController {
     // Verifica se o canceled está sendo passado, o mesmo deverá ser passado apenas pelo método delete
     if (req.body.canceled_at) {
       return res.status(401).json({
-        error: 'Cancelations must be defined only in cancelation section',
+        error: 'Cancellations must be defined only in cancelation section',
       });
     }
     // Consulta a existencia do registro
@@ -131,13 +131,13 @@ class OrderController {
     } else
       return res
         .status(400)
-        .json({ error: 'orders only be started between 7 at 18 hours' });
+        .json({ error: 'Orders only be started between 7 at 18 hours' });
     // Na existencia da id de signature no corpo da requisição, o mesmo sobrescreverá o valor registrado
     if (req.body.signature_id) {
       order.signature_id = req.body.signature_id;
     }
 
-    const newOrder = await order.update(req.body);
+    const newOrder = await order.save();
     return res.json(newOrder);
   }
 
