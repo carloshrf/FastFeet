@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { parseISO, format } from 'date-fns';
+import { parseISO, format, setHours } from 'date-fns';
 import pt from 'date-fns/locale/pt';
 import Mail from '../../lib/Mail';
 import Deliveryman from '../models/Deliveryman';
@@ -101,16 +101,43 @@ class OrderController {
   }
 
   async update(req, res) {
+    const schema = Yup.object().shape({
+      product: Yup.string(),
+      start_date: Yup.date(),
+      end_date: Yup.date(),
+      deliveryman_id: Yup.number(),
+    });
+    // Verifica a validação dos dados informados conforme definido
+    if (!(await schema.isValid(req.body))) {
+      return res.status(400).json({ error: 'Data validation error' });
+    }
+    // Verifica se o canceled está sendo passado, o mesmo deverá ser passado apenas pelo método delete
+    if (req.body.canceled_at) {
+      return res.status(401).json({
+        error: 'Cancelations must be defined only in cancelation section',
+      });
+    }
+    // Consulta a existencia do registro
     const order = await Order.findByPk(req.params.id);
 
     if (!order) {
       return res.status(400).json({ error: 'Order does not exists' });
     }
+    // Recebe a data de início, formata para Date e verifica se é entre 8 às 18
+    const start_date = parseISO(req.body.start_date);
 
-    order.start_date = parseISO(req.body.start_date);
-    order.end_date = parseISO(req.body.end_date);
+    if (start_date.getHours() >= '8' && start_date.getHours() <= '17') {
+      order.start_date = start_date;
+    } else
+      return res
+        .status(400)
+        .json({ error: 'orders only be started between 7 at 18 hours' });
+    // Na existencia da id de signature no corpo da requisição, o mesmo sobrescreverá o valor registrado
+    if (req.body.signature_id) {
+      order.signature_id = req.body.signature_id;
+    }
 
-    const newOrder = await order.update();
+    const newOrder = await order.update(req.body);
     return res.json(newOrder);
   }
 
