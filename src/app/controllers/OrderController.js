@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { parseISO, format, setHours } from 'date-fns';
+import { parseISO, format } from 'date-fns';
 import pt from 'date-fns/locale/pt';
 import Mail from '../../lib/Mail';
 import Deliveryman from '../models/Deliveryman';
@@ -105,17 +105,12 @@ class OrderController {
       product: Yup.string(),
       start_date: Yup.date(),
       end_date: Yup.date(),
+      canceled_at: Yup.date(),
       deliveryman_id: Yup.number(),
     });
     // Verifica a validação dos dados informados conforme definido
     if (!(await schema.isValid(req.body))) {
       return res.status(400).json({ error: 'Data validation error' });
-    }
-    // Verifica se o canceled está sendo passado, o mesmo deverá ser passado apenas pelo método delete
-    if (req.body.canceled_at) {
-      return res.status(401).json({
-        error: 'Cancellations must be defined only in cancelation section',
-      });
     }
     // Consulta a existencia do registro
     const order = await Order.findByPk(req.params.id);
@@ -136,21 +131,43 @@ class OrderController {
     if (req.body.signature_id) {
       order.signature_id = req.body.signature_id;
     }
+    // Verifica se o canceled está sendo passado, se sim, atualizará a data
+    if (req.body.canceled_at) {
+      order.canceled_at = req.body.canceled_at;
+    }
 
     const newOrder = await order.save();
     return res.json(newOrder);
   }
 
   async delete(req, res) {
-    const order = await Order.findByPk(req.params.id);
+    const order = await Order.findByPk(req.params.id, {
+      include: [
+        {
+          model: Deliveryman,
+          as: 'deliveryman',
+          attributes: ['name', 'email'],
+        },
+        {
+          model: Recipient,
+          as: 'recipient',
+          attributes: [
+            'name',
+            'zipcode',
+            'street',
+            'city',
+            'number',
+            'complement',
+          ],
+        },
+      ],
+    });
 
     if (!order) {
       res.json(400).json({ error: 'Order ID does not exists' });
     }
 
-    order.canceled_at = new Date();
-
-    order.save();
+    await order.destroy();
 
     return res.json(order);
   }
