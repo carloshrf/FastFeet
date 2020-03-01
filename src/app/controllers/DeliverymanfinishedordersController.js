@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import Order from '../models/Order';
 import Recipient from '../models/Recipient';
 import Deliveryman from '../models/Deliveryman';
@@ -6,7 +7,9 @@ class OrderlistController {
   async index(req, res) {
     const order = await Order.findAll({
       where: {
-        end_date: null,
+        end_date: {
+          [Op.ne]: null,
+        },
         canceled_at: null,
         deliveryman_id: req.params.id,
       },
