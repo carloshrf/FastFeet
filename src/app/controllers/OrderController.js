@@ -1,5 +1,6 @@
 import * as Yup from 'yup';
-import { parseISO, format, isBefore } from 'date-fns';
+import { format, isBefore, parseISO, startOfDay, endOfDay } from 'date-fns';
+import {Op} from 'sequelize';
 import pt from 'date-fns/locale/pt';
 import Mail from '../../lib/Mail';
 import Deliveryman from '../models/Deliveryman';
@@ -52,6 +53,15 @@ class OrderController {
 
     if (!(await schema.isValid(req.body))) {
       return res.status(400).json('Data validation fails');
+    }
+
+    const recipient = await Recipient.findByPk(req.body.recipient_id);
+    const deliveryman = await Deliveryman.findByPk(req.body.deliveryman_id);
+    if (!recipient) {
+      return res.status(400).json({error: 'Do not exists a recipient with this ID'});
+    }
+    if(!deliveryman) {
+      return res.status(400).json({error: 'Do not exists a deliveryman with this ID'});
     }
 
     const order = await Order.create(req.body);
@@ -139,7 +149,7 @@ class OrderController {
           'It is not possible send an end date together with cancellation date',
       });
     }
-    // Algumas verificações de Date
+
     if (req.body.canceled_at) {
       if (order.end_date == null) {
         order.canceled_at = req.body.canceled_at;
@@ -150,10 +160,12 @@ class OrderController {
     }
 
     if ((order.start_date || req.body.start_date) && req.body.end_date) {
-      const { start_date } = req.body;
-      const { end_date } = req.body;
 
-      if (isBefore(end_date, start_date)) {
+      const { start_date } = parseISO(req.body);
+      const thisStartDate = order.start_date;
+      const { end_date } = parseISO(req.body);
+
+      if (isBefore(end_date, (start_date || thisStartDate))) {
         return res.status(401).json({
           error: 'Is not possible finalize an order even before start it',
         });
@@ -165,7 +177,7 @@ class OrderController {
             .status(401)
             .json({ error: 'You cannot end a cancelled order' });
         }
-        if (!req.body.signature_id) {
+        if (!req.body.signature_id || !order.signature_id) {
           return res
             .status(401)
             .json(
@@ -182,7 +194,12 @@ class OrderController {
       });
     }
 
+    if (req.body.product) {
+      order.product = req.body.product;
+    }
+
     const newOrder = await order.save();
+
     return res.json(newOrder);
   }
 

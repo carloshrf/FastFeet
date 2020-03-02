@@ -20,7 +20,10 @@ routes.get(
   '/deliveryman/:id/finishedorders',
   DeliverymanfinishedordersController.index
 );
-routes.put('/deliveryman/:id/orders', DeliverymanordersController.update);
+routes.put(
+  '/deliveryman/:deliverymanid/orders/:orderid',
+  DeliverymanordersController.update
+);
 
 routes.use(authMiddleware);
 
