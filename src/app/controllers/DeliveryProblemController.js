@@ -3,34 +3,36 @@ import Order from '../models/Order';
 
 class DeliveryProblemControll {
   async index(req, res) {
-    const delivery_id = req.params.id;
+    const order_id = req.params.id;
 
-    const delivery = await DeliveryProblem.findByPk(delivery_id);
+    const delivery = await DeliveryProblem.findByPk(order_id);
 
     return res.json(delivery);
   }
 
   async store(req, res) {
     const { description } = req.body;
-    const delivery_id = req.params.id;
+    const order_id = req.params.id;
 
     const a = await DeliveryProblem.create({
-      delivery_id,
+      order_id,
       description,
     });
     return res.json(a);
   }
 
   async delete(req, res) {
-    const delivery_id = req.params.id;
+    const deliveryProb_id = req.params.id;
 
-    const order = await Order.findByPk(delivery_id);
+    const deliveryProb = await DeliveryProblem.findByPk(deliveryProb_id);
 
-    order.canceled_at = new Date();
+    const delivery = await Order.findByPk(deliveryProb.order_id);
 
-    const nowOrder = await order.save();
+    delivery.canceled_at = new Date();
 
-    return res.json(nowOrder);
+    const nowDelivery = await delivery.save();
+
+    return res.json(nowDelivery);
   }
 }
 

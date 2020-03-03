@@ -1,11 +1,11 @@
 import * as Yup from 'yup';
-import { format, isBefore, parseISO } from 'date-fns';
-import pt from 'date-fns/locale/pt';
-import Mail from '../../lib/Mail';
+import { isBefore, parseISO } from 'date-fns';
 import Deliveryman from '../models/Deliveryman';
 import Recipient from '../models/Recipient';
 import File from '../models/File';
 import Order from '../models/Order';
+import Queue from '../../lib/Queue';
+import DeliveryMaill from '../jobs/DeliveryMaill';
 
 class OrderController {
   async index(req, res) {
@@ -92,22 +92,8 @@ class OrderController {
       ],
     });
 
-    await Mail.sendMail({
-      to: `${orderInfo.deliveryman.name} <${orderInfo.deliveryman.email}>`,
-      subject: 'Nova Encomenda',
-      template: 'newShipping',
-      context: {
-        deliveryman: orderInfo.deliveryman.name,
-        product: orderInfo.product,
-        number: orderInfo.recipient.number,
-        complement: orderInfo.recipient.complement,
-        street: orderInfo.recipient.street,
-        city: orderInfo.recipient.city,
-        state: orderInfo.recipient.state,
-        zipcode: orderInfo.recipient.zipcode,
-        name: orderInfo.recipient.name,
-        date: format(orderInfo.createdAt, "dd'/'MM'/'y", { locale: pt }),
-      },
+    await Queue.add(DeliveryMaill.key, {
+      orderInfo,
     });
 
     return res.json(orderInfo);
