@@ -1,6 +1,5 @@
 import * as Yup from 'yup';
-import { format, isBefore, parseISO, startOfDay, endOfDay } from 'date-fns';
-import {Op} from 'sequelize';
+import { format, isBefore, parseISO } from 'date-fns';
 import pt from 'date-fns/locale/pt';
 import Mail from '../../lib/Mail';
 import Deliveryman from '../models/Deliveryman';
@@ -58,10 +57,14 @@ class OrderController {
     const recipient = await Recipient.findByPk(req.body.recipient_id);
     const deliveryman = await Deliveryman.findByPk(req.body.deliveryman_id);
     if (!recipient) {
-      return res.status(400).json({error: 'Do not exists a recipient with this ID'});
+      return res
+        .status(400)
+        .json({ error: 'Do not exists a recipient with this ID' });
     }
-    if(!deliveryman) {
-      return res.status(400).json({error: 'Do not exists a deliveryman with this ID'});
+    if (!deliveryman) {
+      return res
+        .status(400)
+        .json({ error: 'Do not exists a deliveryman with this ID' });
     }
 
     const order = await Order.create(req.body);
@@ -160,12 +163,11 @@ class OrderController {
     }
 
     if ((order.start_date || req.body.start_date) && req.body.end_date) {
-
       const { start_date } = parseISO(req.body);
       const thisStartDate = order.start_date;
       const { end_date } = parseISO(req.body);
 
-      if (isBefore(end_date, (start_date || thisStartDate))) {
+      if (isBefore(end_date, start_date || thisStartDate)) {
         return res.status(401).json({
           error: 'Is not possible finalize an order even before start it',
         });

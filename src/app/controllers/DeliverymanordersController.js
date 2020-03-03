@@ -47,12 +47,18 @@ class OrderlistController {
 
     const order = await Order.findByPk(orderid);
 
-    if (req.body.canceled_at) {
-      return res.status(401).json({ error: 'You can not cancell an order.' });
+    if (order.deliveryman_id != deliverymanid) {
+      return res
+        .status(401)
+        .json({ error: 'You cannot update a order of another deliveryman' });
     }
 
     if (!order) {
       return res.status(400).json({ error: 'Order does not exists' });
+    }
+
+    if (req.body.canceled_at) {
+      return res.status(401).json({ error: 'You can not cancell an order.' });
     }
 
     if ((order.start_date || start_date) && end_date) {

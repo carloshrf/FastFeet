@@ -10,6 +10,7 @@ import FileController from './app/controllers/FileController';
 import OrderController from './app/controllers/OrderController';
 import DeliverymanordersController from './app/controllers/DeliverymanordersController';
 import DeliverymanfinishedordersController from './app/controllers/DeliverymanfinishedordersController';
+import DeliveryProblemController from './app/controllers/DeliveryProblemController';
 
 const routes = new Router();
 const upload = multer(multerConfig);
@@ -24,6 +25,9 @@ routes.put(
   '/deliveryman/:deliverymanid/orders/:orderid',
   DeliverymanordersController.update
 );
+routes.post('/delivery/:id/problems', DeliveryProblemController.store);
+routes.get('/delivery/:id/problems', DeliveryProblemController.index);
+routes.delete('/problem/:id/cancel-delivery', DeliveryProblemController.delete);
 
 routes.use(authMiddleware);
 
