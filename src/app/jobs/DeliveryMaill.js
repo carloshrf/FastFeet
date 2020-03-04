@@ -12,9 +12,10 @@ class DeliveryMaill {
 
     await Mail.sendMail({
       to: `${orderInfo.deliveryman.name} <${orderInfo.deliveryman.email}>`,
-      subject: 'Nova Encomenda',
+      subject: `Nova Encomenda - ID de registro: ${orderInfo.id}`,
       template: 'newShipping',
       context: {
+        orderId: orderInfo.id,
         deliveryman: orderInfo.deliveryman.name,
         product: orderInfo.product,
         number: orderInfo.recipient.number,

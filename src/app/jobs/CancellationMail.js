@@ -2,19 +2,20 @@ import { format, parseISO } from 'date-fns';
 import pt from 'date-fns/locale/pt';
 import Mail from '../../lib/Mail';
 
-class DeliveryMaill {
+class CancellationMail {
   get key() {
-    return 'DeliveryMaill';
+    return 'CancellationMail';
   }
 
   async handle({ data }) {
-    const { orderInfo } = data;
+    const { orderInfo, problem } = data;
 
     await Mail.sendMail({
       to: `${orderInfo.deliveryman.name} <${orderInfo.deliveryman.email}>`,
-      subject: 'Nova Encomenda',
-      template: 'newShipping',
+      subject: `A entrega de ID ${orderInfo.id} foi CANCELADA: `,
+      template: 'newCancellation',
       context: {
+        orderId: orderInfo.id,
         deliveryman: orderInfo.deliveryman.name,
         product: orderInfo.product,
         number: orderInfo.recipient.number,
@@ -24,12 +25,14 @@ class DeliveryMaill {
         state: orderInfo.recipient.state,
         zipcode: orderInfo.recipient.zipcode,
         name: orderInfo.recipient.name,
-        date: format(parseISO(orderInfo.createdAt), "dd'/'MM'/'y", {
+        description: problem.description,
+        cancelled_at: format(parseISO(orderInfo.canceled_at), "dd'/'MM'/'y", {
           locale: pt,
         }),
       },
     });
+    console.log('teste2');
   }
 }
 
-export default new DeliveryMaill();
+export default new CancellationMail();

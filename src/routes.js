@@ -22,7 +22,7 @@ routes.get(
   DeliverymanfinishedordersController.index
 );
 routes.put(
-  '/deliveryman/:deliverymanid/orders/:orderid',
+  '/deliveryman/:deliverymanid/order/:orderid',
   DeliverymanordersController.update
 );
 routes.post('/delivery/:id/problems', DeliveryProblemController.store);

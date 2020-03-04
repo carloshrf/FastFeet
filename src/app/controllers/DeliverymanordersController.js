@@ -47,7 +47,7 @@ class OrderlistController {
 
     const order = await Order.findByPk(orderid);
 
-    if (order.deliveryman_id != deliverymanid) {
+    if (order.deliveryman_id !== Number(deliverymanid)) {
       return res
         .status(401)
         .json({ error: 'You cannot update a order of another deliveryman' });

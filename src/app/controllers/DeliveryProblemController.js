@@ -1,5 +1,9 @@
 import DeliveryProblem from '../models/DeliveryProblem';
+import Deliveryman from '../models/Deliveryman';
 import Order from '../models/Order';
+import Recipient from '../models/Recipient';
+import Queue from '../../lib/Queue';
+import CancellationMail from '../jobs/CancellationMail';
 
 class DeliveryProblemControll {
   async index(req, res) {
@@ -14,23 +18,63 @@ class DeliveryProblemControll {
     const { description } = req.body;
     const order_id = req.params.id;
 
-    const a = await DeliveryProblem.create({
+    const problemExists = await DeliveryProblem.findOne({
+      where: { order_id },
+    });
+
+    if (problemExists) {
+      return res
+        .status(401)
+        .json({ error: 'The order already have a registred problem' });
+    }
+
+    const problem = await DeliveryProblem.create({
       order_id,
       description,
     });
-    return res.json(a);
+
+    return res.json(problem);
   }
 
   async delete(req, res) {
-    const deliveryProb_id = req.params.id;
+    const problemId = req.params.id;
 
-    const deliveryProb = await DeliveryProblem.findByPk(deliveryProb_id);
+    const problem = await DeliveryProblem.findByPk(problemId);
 
-    const delivery = await Order.findByPk(deliveryProb.order_id);
+    const delivery = await Order.findByPk(problem.order_id);
 
     delivery.canceled_at = new Date();
 
     const nowDelivery = await delivery.save();
+
+    const orderInfo = await Order.findByPk(problem.order_id, {
+      attributes: ['id', 'product', 'canceled_at'],
+      include: [
+        {
+          model: Recipient,
+          as: 'recipient',
+          attributes: [
+            'name',
+            'street',
+            'number',
+            'complement',
+            'state',
+            'city',
+            'zipcode',
+          ],
+        },
+        {
+          model: Deliveryman,
+          as: 'deliveryman',
+          attributes: ['name', 'email'],
+        },
+      ],
+    });
+
+    await Queue.add(CancellationMail.key, {
+      orderInfo,
+      problem,
+    });
 
     return res.json(nowDelivery);
   }
