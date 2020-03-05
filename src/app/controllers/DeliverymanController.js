@@ -37,6 +37,7 @@ class DeliverymanController {
   }
 
   async update(req, res) {
+
     const deliveryman = await Deliveryman.findByPk(req.params.id);
 
     if (!deliveryman) {

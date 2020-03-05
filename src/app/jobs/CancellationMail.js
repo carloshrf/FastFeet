@@ -31,7 +31,6 @@ class CancellationMail {
         }),
       },
     });
-    console.log('teste2');
   }
 }
 

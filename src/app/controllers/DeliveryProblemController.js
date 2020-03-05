@@ -43,6 +43,10 @@ class DeliveryProblemControll {
 
     const delivery = await Order.findByPk(problem.order_id);
 
+    if (delivery.canceled_at) {
+      return res.status(401).json({error: 'This order has already been canceled'})
+    }
+
     delivery.canceled_at = new Date();
 
     const nowDelivery = await delivery.save();
