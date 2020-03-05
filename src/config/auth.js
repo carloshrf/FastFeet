@@ -1,4 +1,4 @@
 export default {
-  secret: '37533b9195b6c31974e0980c313938e0', // ofastéfeet
+  secret: process.env.APP_SECRET, // ofastéfeet
   expiresIn: '7d',
 };

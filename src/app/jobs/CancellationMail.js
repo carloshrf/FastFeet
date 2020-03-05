@@ -17,6 +17,7 @@ class CancellationMail {
       context: {
         orderId: orderInfo.id,
         deliveryman: orderInfo.deliveryman.name,
+        recipient: orderInfo.recipient.name,
         product: orderInfo.product,
         number: orderInfo.recipient.number,
         complement: orderInfo.recipient.complement,

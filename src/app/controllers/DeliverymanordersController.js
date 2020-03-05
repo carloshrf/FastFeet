@@ -42,7 +42,6 @@ class OrderlistController {
   }
 
   async update(req, res) {
-
     const { deliverymanid, orderid } = req.params;
     const { signature_id, start_date, end_date } = req.body;
 

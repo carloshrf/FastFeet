@@ -31,6 +31,24 @@ class UserController {
       email,
     });
   }
+
+  async delete(req, res) {
+    const { email } = req.body;
+
+    const user = await User.findOne({
+      where: { email },
+    });
+
+    if (!user) {
+      return res
+        .status()
+        .json({ error: 'Do not have a registred user with this email' });
+    }
+
+    const oldUser = await user.destroy();
+
+    return res.json(oldUser);
+  }
 }
 
 export default new UserController();

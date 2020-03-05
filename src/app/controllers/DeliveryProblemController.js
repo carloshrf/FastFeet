@@ -9,7 +9,13 @@ class DeliveryProblemControll {
   async index(req, res) {
     const order_id = req.params.id;
 
-    const delivery = await DeliveryProblem.findByPk(order_id);
+    const delivery = await DeliveryProblem.findByPk(order_id, {
+      include: {
+        model: Order,
+        as: 'order',
+        attributes: ['canceled_at'],
+      },
+    });
 
     return res.json(delivery);
   }
@@ -44,7 +50,9 @@ class DeliveryProblemControll {
     const delivery = await Order.findByPk(problem.order_id);
 
     if (delivery.canceled_at) {
-      return res.status(401).json({error: 'This order has already been canceled'})
+      return res
+        .status(401)
+        .json({ error: 'This order has already been canceled' });
     }
 
     delivery.canceled_at = new Date();
