@@ -32,12 +32,28 @@ class UserController {
     });
   }
 
-  async delete(req, res) {
-    const { email } = req.body;
+  async update(req, res) {
+    const { id } = req.params;
 
-    const user = await User.findOne({
-      where: { email },
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      return res.status(400).json({ error: 'This user ID does not exists' });
+    }
+
+    const newUser = await user.update(req.body);
+
+    return res.json({
+      id: newUser.id,
+      user: newUser.name,
+      email: newUser.email,
     });
+  }
+
+  async delete(req, res) {
+    const { id } = req.params;
+
+    const user = await User.findByPk(id);
 
     if (!user) {
       return res
@@ -45,9 +61,9 @@ class UserController {
         .json({ error: 'Do not have a registred user with this email' });
     }
 
-    const oldUser = await user.destroy();
+    await user.destroy();
 
-    return res.json(oldUser);
+    return res.json(user);
   }
 }
 

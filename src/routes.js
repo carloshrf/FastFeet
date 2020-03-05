@@ -43,5 +43,7 @@ routes.delete('/problem/:id/cancel-delivery', DeliveryProblemController.delete);
 routes.post('/recipients', RecipientController.store);
 routes.put('/recipients/:id', RecipientController.update);
 routes.post('/users', UserController.store);
+routes.delete('/users/:id', UserController.delete);
+routes.put('/users/:id', UserController.update);
 
 export default routes;
