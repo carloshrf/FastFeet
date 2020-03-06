@@ -149,17 +149,17 @@ class OrderController {
     }
 
     if ((order.start_date || req.body.start_date) && req.body.end_date) {
-      const { start_date } = parseISO(req.body);
+      const start_date = parseISO(req.body.start_date);
       const thisStartDate = order.start_date;
-      const { end_date } = parseISO(req.body);
+      const end_date = parseISO(req.body.end_date);
 
       if (isBefore(end_date, start_date || thisStartDate)) {
         return res.status(401).json({
-          error: 'Is not possible finalize an order even before start it',
+          error: 'It is not possible finalize an order even before start it',
         });
       }
 
-      if (end_date) {
+      if (req.body.end_date) {
         if (order.canceled_at != null) {
           return res
             .status(401)

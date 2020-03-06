@@ -1,5 +1,6 @@
 import { isBefore, startOfDay, endOfDay, parseISO } from 'date-fns';
 import { Op } from 'sequelize';
+import * as Yup from 'yup';
 import Order from '../models/Order';
 import Recipient from '../models/Recipient';
 import Deliveryman from '../models/Deliveryman';
@@ -42,6 +43,18 @@ class DeliverymanorderController {
   }
 
   async update(req, res) {
+    const schema = Yup.object().shape({
+      deliveryman_id: Yup.number(),
+      orderid: Yup.number(),
+      signature_id: Yup.number(),
+      start_date: Yup.date(),
+      end_date: Yup.date(),
+    });
+
+    if (!(await schema.isValid(schema))) {
+      return res.status(400).json({ error: 'Data validation fails' });
+    }
+
     const { deliverymanid, orderid } = req.params;
     const { signature_id, start_date, end_date } = req.body;
 
@@ -64,9 +77,9 @@ class DeliverymanorderController {
     if ((order.start_date || start_date) && end_date) {
       const thisStartDate = order.start_date;
 
-      if (isBefore(parseISO(end_date), (start_date || thisStartDate))) {
+      if (isBefore(parseISO(end_date), start_date || thisStartDate)) {
         return res.status(401).json({
-          error: 'Is not possible finalize an order even before start it',
+          error: 'It is not possible finalize an order even before start it',
         });
       }
 
@@ -88,7 +101,6 @@ class DeliverymanorderController {
     }
 
     if (end_date && !(start_date || order.start_date)) {
-      console.log(start_date, order.start_date)
       return res.status(401).json({
         error: 'You cannot end an order without start it',
       });
@@ -104,10 +116,10 @@ class DeliverymanorderController {
       },
     });
 
-    if(start_date) {
+    if (start_date) {
       order.start_date = start_date;
     }
-    if(signature_id) {
+    if (signature_id) {
       order.signature_id = signature_id;
     }
 
