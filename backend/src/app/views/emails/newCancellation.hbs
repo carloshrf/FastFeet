@@ -1,0 +1,13 @@
+<strong>Olá {{ deliveryman }},</strong>
+<p>Houve o <span style= "color: red;">cancelamento</span> de uma entrega, veja abaixo as informações do cancelamento: </p>
+<p>
+  <h3>Encomenda N° <strong>{{ orderId }}</strong></h3>
+  <strong>Motivo do cancelamento: </strong> {{ description }} <br />
+  <strong>Destinatário: </strong> {{ recipient }} <br />
+  <strong>Produto: </strong> {{ product }} <br />
+  <strong>Endereço: </strong> {{ street }}, N° {{ number }} - {{ complement }},
+  {{ city }} - {{ state }}, Cep: {{ zipcode }} <br />
+  <strong>Data de cancelamento: </strong> {{ cancelled_at }} <br />
+<hr />
+  <p>Quaisquer dúvidas, entrar em contato com o atendimento!</p>
+</p>
