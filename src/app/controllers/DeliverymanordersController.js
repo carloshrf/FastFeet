@@ -4,7 +4,7 @@ import Order from '../models/Order';
 import Recipient from '../models/Recipient';
 import Deliveryman from '../models/Deliveryman';
 
-class OrderlistController {
+class DeliverymanorderController {
   async index(req, res) {
     const order = await Order.findAll({
       where: {
@@ -64,7 +64,7 @@ class OrderlistController {
     if ((order.start_date || start_date) && end_date) {
       const thisStartDate = order.start_date;
 
-      if (isBefore(end_date, start_date || thisStartDate)) {
+      if (isBefore(parseISO(end_date), (start_date || thisStartDate))) {
         return res.status(401).json({
           error: 'Is not possible finalize an order even before start it',
         });
@@ -82,11 +82,13 @@ class OrderlistController {
               "To end an order is required the recipient's signature picture",
           });
         }
+
         order.end_date = parseISO(end_date);
       }
     }
 
     if (end_date && !(start_date || order.start_date)) {
+      console.log(start_date, order.start_date)
       return res.status(401).json({
         error: 'You cannot end an order without start it',
       });
@@ -102,16 +104,23 @@ class OrderlistController {
       },
     });
 
+    if(start_date) {
+      order.start_date = start_date;
+    }
+    if(signature_id) {
+      order.signature_id = signature_id;
+    }
+
     if (orders.length >= 5) {
       return res
         .status(401)
         .json({ error: 'You already reached the limit of 5 daily orders' });
     }
 
-    const newOrder = await order.update(signature_id, start_date, end_date);
+    const newOrder = await order.save();
 
     return res.json(newOrder);
   }
 }
 
-export default new OrderlistController();
+export default new DeliverymanorderController();
